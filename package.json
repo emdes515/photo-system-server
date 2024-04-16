@@ -1,0 +1,14 @@
+{
+  "name": "photo-system-server",
+  "version": "1.0.0",
+  "description": "Server for photo-system by Mateusz Jankowski",
+  "main": "photo-system-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mateusz Jankowski",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
