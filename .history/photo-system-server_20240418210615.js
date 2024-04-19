@@ -58,7 +58,7 @@ app.get('/files', async (req, res) => {
 		return ancestors.reverse();
 	}
 
-	async function exploreDirectory(dirPath, rootPath) {
+	function exploreDirectory(dirPath, rootPath) {
 		const result = {
 			files: [],
 			directories: {},
@@ -68,19 +68,19 @@ app.get('/files', async (req, res) => {
 
 		const items = fs.readdirSync(dirPath);
 
-		for (const item of items) {
+		const filePromises = items.map(async (item) => {
 			const fullPath = path.join(dirPath, item);
 			const stat = fs.statSync(fullPath);
 
 			if (stat && stat.isDirectory()) {
-				result.directories[item] = await exploreDirectory(fullPath, rootPath, IpServera, port);
+				result.directories[item] = exploreDirectory(fullPath, rootPath);
 			} else {
 				const fileData = await getFileData(fullPath, dirPath);
 				result.files.push(fileData);
 			}
-		}
+		});
 
-		return result;
+		return Promise.all(filePromises).then(() => result);
 	}
 
 	const result = await exploreDirectory(directoryPath, directoryPath);

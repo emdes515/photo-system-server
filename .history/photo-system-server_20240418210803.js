@@ -75,7 +75,7 @@ app.get('/files', async (req, res) => {
 			if (stat && stat.isDirectory()) {
 				result.directories[item] = await exploreDirectory(fullPath, rootPath, IpServera, port);
 			} else {
-				const fileData = await getFileData(fullPath, dirPath);
+				const fileData = await getFileData(fullPath, dirPath, serverAddress, serverPort);
 				result.files.push(fileData);
 			}
 		}
