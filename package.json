@@ -9,7 +9,11 @@
   "author": "Mateusz Jankowski",
   "license": "ISC",
   "dependencies": {
+    "exif-parser": "^0.1.12",
     "express": "^4.19.2",
-    "sharp": "^0.33.3"
+    "node-iptc": "^1.0.5",
+    "sharp": "^0.33.3",
+    "uuid": "^9.0.1",
+    "xmp-reader": "^0.0.3"
   }
 }

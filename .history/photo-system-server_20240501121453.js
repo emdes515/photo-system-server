@@ -3,12 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const sharp = require('sharp');
-const exifParser = require('exif-parser');
-const iptcParser = require('node-iptc');
-const xmpReader = require('xmp-reader');
-const crypto = require('crypto');
+const { v4 } = require('uuid');
 
 const app = express();
+
 const port = 3000;
 
 //zmień w razie potrzeby
@@ -18,38 +16,28 @@ const directoryPath = path.join(__dirname, './images');
 
 app.use(cors());
 
-function getFolderId(folderPath) {
-	const hash = crypto.createHash('sha256');
-	hash.update(folderPath);
-	return hash.digest('hex');
-}
-
-async function getFileData(file, dirPath, rootPath, serverAddress, serverPort) {
-	const relativePath = path.relative(rootPath, file);
-
+async function getFileData(file, dirPath, serverAddress, serverPort) {
+	const relativePath = path.relative(dirPath, file);
 	const url = `http://${IpServera}:${port}/img/${relativePath}`;
 	let width = null;
 	let height = null;
-	let metadata = null;
-	let exif = null;
 
 	if (file.endsWith('.jpg') || file.endsWith('.png')) {
 		const image = sharp(file);
 		const metadata = await image.metadata();
 		width = metadata.width;
 		height = metadata.height;
-
-		const buffer = fs.readFileSync(file);
-		exif = exifParser.create(buffer).parse().tags;
 	}
+
+	const stats = fs.statSync(file);
+
 	return {
 		name: path.basename(file),
 		path: relativePath,
 		url,
 		width,
 		height,
-		metadata: exif,
-		isInCart: false,
+		metadata: stats,
 	};
 }
 
@@ -68,7 +56,7 @@ function getAncestors(dirPath, rootPath) {
 
 async function exploreDirectory(dirPath, rootPath) {
 	const result = {
-		id: getFolderId(dirPath),
+		id: v4(),
 		files: [],
 		directories: {},
 		ancestors: getAncestors(dirPath, rootPath),
@@ -84,23 +72,29 @@ async function exploreDirectory(dirPath, rootPath) {
 		if (stat && stat.isDirectory()) {
 			result.directories[item] = await exploreDirectory(fullPath, rootPath, IpServera, port);
 		} else {
-			const fileData = await getFileData(fullPath, dirPath, rootPath);
+			const fileData = await getFileData(fullPath, dirPath);
 			result.files.push(fileData);
 		}
 	}
+}
 
-	return result;
+let data;
+
+async function initializeData() {
+	data = [a];
 }
 
 app.get('/files', async (req, res) => {
-	const result = await exploreDirectory(directoryPath, directoryPath);
+	console.log(data);
 
-	res.send(result);
+	res.send(data);
 });
 
 app.use('/img', express.static(directoryPath));
 
-app.listen(port, () => {
+app.listen(port, async () => {
 	console.log(`Serwer działa na porcie ${port}`);
 	console.log(`Ustawiono scieżkę do foldderu na: ${directoryPath}`);
+	await initializeData();
+	console.log('Dane zostały zebrane.');
 });
